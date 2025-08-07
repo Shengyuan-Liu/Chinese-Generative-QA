@@ -132,15 +132,14 @@ def compute_metrics(eval_pred):
     labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
     decoded_refs = tokenizer.batch_decode(labels, skip_special_tokens=True)
 
-    # sacrebleu expects List[str], List[List[str]]
     # references: List[List[str]]
-    references = [[r] for r in decoded_refs]
+    references = [decoded_refs]
 
     bleu = sacrebleu.corpus_bleu(decoded_preds, references, force=True)
     # sacrebleu.score 是累计 BLEU-4 的百分比
     # sacrebleu.precisions 是 p1~p4 的百分比
     return {
-        "bleu":   bleu.score / 100,
+        "bleu":   np.mean(bleu.precisions) / 100,
         "bleu-1": bleu.precisions[0] / 100,
         "bleu-2": bleu.precisions[1] / 100,
         "bleu-3": bleu.precisions[2] / 100,
